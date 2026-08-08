@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/lib/supabase";
 import {
   buildMagicPrompt,
   formatMagicPrompt,
@@ -35,9 +37,37 @@ function Section({ title, body }: { title: string; body: string }) {
 export function PromptGenerator() {
   const [input, setInput] = useState<MagicPromptInput>(EMPTY);
   const [output, setOutput] = useState<MagicPrompt | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const { user } = useAuth();
 
   const set = (key: keyof MagicPromptInput) => (value: string) =>
     setInput((prev) => ({ ...prev, [key]: value }));
+
+  const handleSave = async () => {
+    if (!user) {
+      toast.error("Please sign in to save prompts");
+      return;
+    }
+    if (!output) return;
+
+    setIsSaving(true);
+    try {
+      const { error } = await supabase.from("prompts").insert({
+        user_id: user.id,
+        context: output.context,
+        task: output.task,
+        instruction: output.instruction,
+        data: output.data,
+      });
+
+      if (error) throw error;
+      toast.success("Prompt saved successfully!");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to save prompt");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <div className="grid gap-10 lg:grid-cols-2">
@@ -152,16 +182,26 @@ export function PromptGenerator() {
         <div className="flex items-baseline justify-between">
           <h3 className="text-lg tracking-[0.15em]">OUTPUT</h3>
           {output ? (
-            <button
-              type="button"
-              className="font-display text-[0.65rem] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-primary"
-              onClick={async () => {
-                await navigator.clipboard.writeText(formatMagicPrompt(output));
-                toast.success("Prompt copied to clipboard");
-              }}
-            >
-              Copy
-            </button>
+            <div className="flex gap-4">
+              <button
+                type="button"
+                className="font-display text-[0.65rem] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-primary disabled:opacity-50"
+                onClick={handleSave}
+                disabled={isSaving}
+              >
+                {isSaving ? "Saving..." : "Save"}
+              </button>
+              <button
+                type="button"
+                className="font-display text-[0.65rem] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-primary"
+                onClick={async () => {
+                  await navigator.clipboard.writeText(formatMagicPrompt(output));
+                  toast.success("Prompt copied to clipboard");
+                }}
+              >
+                Copy
+              </button>
+            </div>
           ) : null}
         </div>
 

@@ -1,17 +1,18 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import android from "@/assets/android-hero.jpg";
 import { PromptGenerator } from "@/components/PromptGenerator";
-
+import { AuthModal } from "@/components/AuthModal";
+import { useAuth } from "@/hooks/useAuth";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Prompt Nova — Magic Prompt Formula Generator" },
+      { title: "PromptNova-AI Email And Prompt Assistent" },
       {
         name: "description",
         content:
           "Prompt Nova turns rough ideas into structured Magic Prompt Formula prompts: Context, Task, Instruction, Data. Built for developers, freelancers and teams.",
       },
-      { property: "og:title", content: "Prompt Nova — Magic Prompt Formula Generator" },
+      { property: "og:title", content: "PromptNova-AI Email And Prompt Assistent" },
       {
         property: "og:description",
         content:
@@ -38,14 +39,19 @@ const CARDS = [
 ];
 
 function Index() {
+  const { user, signOut } = useAuth();
+
   return (
     <main className="min-h-screen">
       <div className="mx-auto max-w-[1400px] px-6 sm:px-10">
         <header className="flex items-center justify-between border-b border-hairline py-6">
-          <span className="font-display text-lg tracking-[0.3em]">
-            N<span className="text-primary">·</span>NOVA
-          </span>
-          <nav className="hidden gap-10 md:flex">
+          <div className="flex items-center gap-3">
+            <img src="/logo.png" alt="PromptNova Logo" className="w-8 h-8 rounded-md" />
+            <span className="font-display text-lg tracking-[0.1em] uppercase hidden sm:block">
+              PromptNova
+            </span>
+          </div>
+          <nav className="hidden gap-10 md:flex items-center">
             {NAV.map((item) => (
               <a
                 key={item}
@@ -55,8 +61,30 @@ function Index() {
                 {item}
               </a>
             ))}
+            <Link
+              to="/email-assistant"
+              className="inline-flex border border-primary px-4 py-2 font-display text-[0.65rem] uppercase tracking-[0.25em] text-primary transition-all hover:bg-primary hover:text-primary-foreground"
+            >
+              Email Assistant
+            </Link>
           </nav>
           <div className="flex items-center gap-6">
+            {user ? (
+              <div className="flex items-center gap-4">
+                <span className="font-display text-[0.65rem] tracking-[0.2em] text-primary">
+                  {user.email}
+                </span>
+                <button
+                  onClick={signOut}
+                  className="font-display text-[0.65rem] uppercase tracking-[0.25em] text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <AuthModal />
+            )}
+            <div className="h-4 w-px bg-hairline hidden md:block" />
             <span className="font-display text-[0.65rem] tracking-[0.2em] text-muted-foreground">
               ENG
             </span>
@@ -135,9 +163,29 @@ function Index() {
           <PromptGenerator />
         </section>
 
-        <footer className="flex flex-wrap items-center justify-between gap-4 border-t border-hairline py-8 font-display text-[0.6rem] uppercase tracking-[0.3em] text-muted-foreground">
-          <span>Prompt Nova</span>
-          <span>Context · Task · Instruction · Data</span>
+        <footer className="flex flex-col gap-6 border-t border-hairline py-12 md:flex-row md:items-center md:justify-between font-display text-[0.65rem] uppercase tracking-[0.3em] text-muted-foreground">
+          <div className="flex flex-col gap-2">
+            <span className="text-foreground">Made with love ❤️ by Nitish Singh</span>
+            <span>Organisation: NEX TECHNOLOGOIES</span>
+          </div>
+          <div className="flex flex-col gap-2 md:items-end">
+            <a
+              href="https://github.com/NITISH-SINGH007"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-colors hover:text-primary"
+            >
+              GitHub
+            </a>
+            <a
+              href="https://www.linkedin.com/in/nitish-kumar-singh-08952b315?utm_source=share_via&utm_content=profile&utm_medium=member_android"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-colors hover:text-primary"
+            >
+              LinkedIn
+            </a>
+          </div>
         </footer>
       </div>
     </main>
